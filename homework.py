@@ -15,6 +15,7 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='main.log',
     level=logging.INFO)
 
 RETRY_TIME = 600
@@ -30,7 +31,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    ...
+    bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
 
 
 def get_api_answer(current_timestamp: int) -> dict:
@@ -53,7 +54,7 @@ def get_api_answer(current_timestamp: int) -> dict:
 def check_response(response: dict) -> list:
     answer = ''
     try:
-        answer = response[0].get('homeworks')
+        answer = response.get('homeworks')
     except Exception as error:
         logging.error(f'Отсутствует ключ homeworks, в ответе API: {error}')
     return answer
@@ -94,28 +95,31 @@ def check_tokens() -> bool:
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
-        raise Exception("Something went wrong")
-
+        return None
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
+    current_timestamp = int(time.time()) - 60 * 60 * 24 * 31
 
-    ...
+    api_answer = get_api_answer(current_timestamp)
+    # check_response(api_answer)[0].get('status')
+    check_response(api_answer)
 
-    while True:
-        try:
-            response = ...
-
-            ...
-
-            current_timestamp = ...
-            time.sleep(RETRY_TIME)
-
-        except Exception as error:
-            message = f'Сбой в работе программы: {error}'
-            ...
-            time.sleep(RETRY_TIME)
-        else:
-            ...
+    # ...
+    #
+    # while True:
+    #     try:
+    #         response = ...
+    #
+    #         ...
+    #
+    #         current_timestamp = ...
+    #         time.sleep(RETRY_TIME)
+    #
+    #     except Exception as error:
+    #         message = f'Сбой в работе программы: {error}'
+    #         ...
+    #         time.sleep(RETRY_TIME)
+    #     else:
+    #         ...
 
 
 if __name__ == '__main__':
