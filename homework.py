@@ -1,11 +1,21 @@
-...
+import os
+import time
+import logging
+
+import telegram
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 
 
-PRACTICUM_TOKEN = ...
-TELEGRAM_TOKEN = ...
-TELEGRAM_CHAT_ID = ...
+PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO)
 
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
@@ -23,11 +33,12 @@ def send_message(bot, message):
     ...
 
 
-def get_api_answer(current_timestamp):
+def get_api_answer(current_timestamp: int) -> dict:
+    headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-
-    ...
+    homework_statuses = requests.get(ENDPOINT, headers=headers, params=params)
+    return homework_statuses.json()
 
 
 def check_response(response):
@@ -48,8 +59,23 @@ def parse_status(homework):
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
-def check_tokens():
-    ...
+def check_tokens() -> bool:
+    if PRACTICUM_TOKEN is None:
+        logging.critical(f'Отсутствует обязательная переменная окружения:'
+                         f'PRACTICUM_TOKEN'
+                         f'Программа принудительно остановлена.')
+        return False
+    if TELEGRAM_TOKEN is None:
+        logging.critical(f'Отсутствует обязательная переменная окружения:'
+                         f'TELEGRAM_TOKEN'
+                         f'Программа принудительно остановлена.')
+        return False
+    if TELEGRAM_CHAT_ID is None:
+        logging.critical(f'Отсутствует обязательная переменная окружения:'
+                         f'TELEGRAM_CHAT_ID'
+                         f'Программа принудительно остановлена.')
+        return False
+    return True
 
 
 def main():
