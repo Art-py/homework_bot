@@ -34,16 +34,29 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp: int) -> dict:
-    headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    homework_statuses = requests.get(ENDPOINT, headers=headers, params=params)
-    return homework_statuses.json()
+    try:
+        homework_statuses = requests.get(
+            ENDPOINT,
+            headers=HEADERS,
+            params=params
+        )
+        return homework_statuses.json()
+    except Exception as error:
+        logging.error(f'Сбой в работе программы: '
+                      f'Эндпоинт {ENDPOINT} недоступен.'
+                      f'Код ответа: {error}')
+        return {}
 
 
-def check_response(response):
-
-    ...
+def check_response(response: dict) -> list:
+    answer = ''
+    try:
+        answer = response[0].get('homeworks')
+    except Exception as error:
+        logging.error(f'Отсутствует ключ homeworks, в ответе API: {error}')
+    return answer
 
 
 def parse_status(homework):
@@ -80,8 +93,8 @@ def check_tokens() -> bool:
 
 def main():
     """Основная логика работы бота."""
-
-    ...
+    if not check_tokens():
+        raise Exception("Something went wrong")
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
