@@ -46,6 +46,7 @@ def send_message(bot, message):
     except Exception as error:
         logger.error(f'Не удалось отправить сообщение в телеграмм: {error}')
 
+
 def get_api_answer(current_timestamp: int) -> dict:
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
@@ -63,26 +64,29 @@ def get_api_answer(current_timestamp: int) -> dict:
         return {}
 
 
-def check_response(response: dict) -> list:
-    answer = ''
-    try:
-        answer = response.get('homeworks')
-    except Exception as error:
-        logger.error(f'Отсутствует ключ homeworks, в ответе API: {error}')
-    return answer
+def check_response(response: dict) -> dict:
+    if response:
+        try:
+            return {'result': True, 'answer': response.get('homeworks')}
+        except Exception as error:
+            logger.error(f'Отсутствует ключ homeworks, в ответе API: {error}')
+    # Если словарь пришел пустым значит проверять нечего, завершаем работу.
+    return {'result': False, 'answer': {}}
 
 
 def parse_status(homework):
-    homework_name = ...
-    homework_status = ...
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+    print(homework_name)
+    print(homework_status)
+    #
+    # ...
+    #
+    # verdict = ...
+    #
+    # ...
 
-    ...
-
-    verdict = ...
-
-    ...
-
-    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+    # return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def check_tokens() -> bool:
@@ -106,25 +110,25 @@ def check_tokens() -> bool:
 
 def main():
     """Основная логика работы бота."""
-    if not check_tokens():
-        return None
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time()) - 60 * 60 * 24 * 31
 
-    api_answer = get_api_answer(current_timestamp)
+    if not check_tokens():
+        return
+    response = get_api_answer(current_timestamp)
     # check_response(api_answer)[0].get('status')
-    # print(check_response(api_answer))
-    send_message(bot, check_response(api_answer))
+    response = check_response(response)
+    if not response.get('result'):
+        return
 
-    # ...
-    #
+    parse_status(response.get('answer')[0])
+
     # while True:
     #     try:
-    #         response = ...
     #
-    #         ...
     #
-    #         current_timestamp = ...
+    #
+    #         # current_timestamp = ...
     #         time.sleep(RETRY_TIME)
     #
     #     except Exception as error:
