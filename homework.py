@@ -3,7 +3,6 @@ import sys
 import time
 import logging
 from http import HTTPStatus
-import json
 
 import telegram
 import requests
