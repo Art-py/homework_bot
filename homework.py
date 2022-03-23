@@ -65,8 +65,8 @@ def get_api_answer(current_timestamp: int) -> dict:
                      f'Эндпоинт {ENDPOINT} недоступен. '
                      f'Код ответа: {homework_statuses.status_code}')
     if homework_statuses.status_code != HTTPStatus.OK:
-        logger.error('Некоректный ответ от сервера.')
-        raise BadReturnAnswer('Некоректный ответ от сервера.')
+        logger.error(f'Некоректный ответ от сервера. {error}')
+        raise BadReturnAnswer(f'Некоректный ответ от сервера. {error}')
     return homework_statuses.json()
 
 
@@ -160,6 +160,7 @@ def main():
             time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
+            send_message(bot, message)
             time.sleep(RETRY_TIME)
         else:
             pass
