@@ -66,8 +66,8 @@ def get_api_answer(current_timestamp: int) -> dict:
                      f'Код ответа: {homework_statuses.status_code}.'
                      f'Ошибка: {error}')
     if homework_statuses.status_code != HTTPStatus.OK:
-        logger.error(f'Некоректный ответ от сервера.')
-        raise BadReturnAnswer(f'Некоректный ответ от сервера.')
+        logger.error('Некоректный ответ от сервера.')
+        raise BadReturnAnswer('Некоректный ответ от сервера.')
     return homework_statuses.json()
 
 
@@ -121,19 +121,19 @@ def parse_status(homework: dict) -> str:
 def check_tokens() -> bool:
     """Проверяет переменные окружения, при отсутствии, работа прекращается."""
     if PRACTICUM_TOKEN is None:
-        logger.critical(f'Отсутствует обязательная переменная окружения:'
-                        f'PRACTICUM_TOKEN '
-                        f'Программа принудительно остановлена.')
+        logger.critical('Отсутствует обязательная переменная окружения:'
+                        'PRACTICUM_TOKEN '
+                        'Программа принудительно остановлена.')
         return False
     if TELEGRAM_TOKEN is None:
-        logger.critical(f'Отсутствует обязательная переменная окружения: '
-                        f'TELEGRAM_TOKEN '
-                        f'Программа принудительно остановлена.')
+        logger.critical('Отсутствует обязательная переменная окружения: '
+                        'TELEGRAM_TOKEN '
+                        'Программа принудительно остановлена.')
         return False
     if TELEGRAM_CHAT_ID is None:
-        logger.critical(f'Отсутствует обязательная переменная окружения: '
-                        f'TELEGRAM_CHAT_ID '
-                        f'Программа принудительно остановлена.')
+        logger.critical('Отсутствует обязательная переменная окружения: '
+                        'TELEGRAM_CHAT_ID '
+                        'Программа принудительно остановлена.')
         return False
     return True
 
