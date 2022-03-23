@@ -7,7 +7,7 @@ from http import HTTPStatus
 import telegram
 import requests
 from dotenv import load_dotenv
-from exceptions import BadReturnAnswer, WrongDataType, CheckingKeys
+from exceptions import BadReturnAnswer
 
 load_dotenv()
 
@@ -75,19 +75,19 @@ def check_response(response: dict) -> dict:
     """Проверяет ответ API на корректность."""
     if not isinstance(response, dict):
         logger.error('Пришел неверный тип данных от сервера!')
-        raise WrongDataType('Пришел неверный тип данных от сервера!')
+        raise TypeError('Пришел неверный тип данных от сервера!')
 
     if 'homeworks' not in response:
         logger.error('Отсутствует ключ homeworks, в ответе API')
-        raise CheckingKeys('Отсутствует ключ homeworks, в ответе API')
+        raise KeyError('Отсутствует ключ homeworks, в ответе API')
     elif 'current_date' not in response:
         logger.error('Отсутствует ключ current_date, в ответе API')
-        raise CheckingKeys('Отсутствует ключ current_date, в ответе API')
+        raise KeyError('Отсутствует ключ current_date, в ответе API')
     else:
         answer = response.get('homeworks')
         if not isinstance(answer, list):
             logger.error('Пришел неверный тип данных от сервера!')
-            raise WrongDataType('Пришел неверный тип данных от сервера!')
+            raise TypeError('Пришел неверный тип данных от сервера!')
         return answer
 
 
@@ -95,21 +95,21 @@ def parse_status(homework: dict) -> str:
     """Извлекает из информации о домашней работе, статус этой работы."""
     if not isinstance(homework, dict):
         logger.error('Пришел неверный тип данных от сервера!')
-        raise WrongDataType('Пришел неверный тип данных от сервера!')
+        raise TypeError('Пришел неверный тип данных от сервера!')
 
     if 'status' not in homework:
         logger.error('Отсутствует ключ status, в ответе API')
-        raise CheckingKeys('Отсутствует ключ status, в ответе API')
+        raise KeyError('Отсутствует ключ status, в ответе API')
     else:
         homework_status = homework.get('status')
         if homework_status not in HOMEWORK_STATUSES:
             logger.error(f'Недокументированный статус {homework_status}')
-            raise CheckingKeys(
+            raise KeyError(
                 f'Недокументированный статус {homework_status}'
             )
     if 'homework_name' not in homework:
         logger.error('Отсутствует ключ homework_name, в ответе API')
-        raise CheckingKeys('Отсутствует ключ homework_name, в ответе API')
+        raise KeyError('Отсутствует ключ homework_name, в ответе API')
     else:
         homework_name = homework.get('homework_name')
 
