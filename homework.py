@@ -42,7 +42,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot: telegram.bot, message: str):
-    """Отправляет сообщение в чат телеграмма"""
+    """Отправляет сообщение в чат телеграмма."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
         logger.info(f'Бот отправил сообщение {message}')
@@ -91,9 +91,8 @@ def check_response(response: dict) -> dict:
 
 
 def parse_status(homework: dict) -> str:
-    """
-    Извлекает из информации о конкретной домашней работе статус этой работы.
-    """
+    """Извлекает из информации о конкретной домашней работе,
+     статус этой работы."""
     if not isinstance(homework, dict):
         logger.error('Пришел неверный тип данных от сервера!')
         raise WrongDataType('Пришел неверный тип данных от сервера!')
@@ -123,17 +122,17 @@ def check_tokens() -> bool:
     """Проверяет переменные окружения, при отсутствии, работа прекращается."""
     if PRACTICUM_TOKEN is None:
         logger.critical(f'Отсутствует обязательная переменная окружения:'
-                        f'PRACTICUM_TOKEN'
+                        f'PRACTICUM_TOKEN '
                         f'Программа принудительно остановлена.')
         return False
     if TELEGRAM_TOKEN is None:
-        logger.critical(f'Отсутствует обязательная переменная окружения:'
-                        f'TELEGRAM_TOKEN'
+        logger.critical(f'Отсутствует обязательная переменная окружения: '
+                        f'TELEGRAM_TOKEN '
                         f'Программа принудительно остановлена.')
         return False
     if TELEGRAM_CHAT_ID is None:
-        logger.critical(f'Отсутствует обязательная переменная окружения:'
-                        f'TELEGRAM_CHAT_ID'
+        logger.critical(f'Отсутствует обязательная переменная окружения: '
+                        f'TELEGRAM_CHAT_ID '
                         f'Программа принудительно остановлена.')
         return False
     return True
