@@ -109,6 +109,7 @@ def check_response(response: dict) -> dict:
 
 
 def return_check_status(homework):
+    """Проверяет и возвращает статус домашнего задания."""
     if 'status' not in homework:
         logger.error('Отсутствует ключ status, в ответе API')
         raise KeyError('Отсутствует ключ status, в ответе API')
