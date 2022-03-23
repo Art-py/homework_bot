@@ -28,7 +28,7 @@ streamHandler = logging.StreamHandler(sys.stdout)
 streamHandler.setFormatter(formatter)
 logger.addHandler(streamHandler)
 
-RETRY_TIME = 600
+RETRY_TIME = 10
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 LAST_ELEMENT = -1
@@ -141,17 +141,19 @@ def check_tokens() -> bool:
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time()) - 60 * 60 * 24 * 31
+    current_timestamp = int(time.time())
     status_homework_glob = ''
 
     while True:
         try:
             if not check_tokens():
-                return
+                time.sleep(RETRY_TIME)
+                continue
             response = get_api_answer(current_timestamp)
             response = check_response(response)
             if not response:
-                return
+                time.sleep(RETRY_TIME)
+                continue
             if status_homework_glob != response:
                 status_homework_glob = response
                 message_status = parse_status(response[LAST_ELEMENT])
