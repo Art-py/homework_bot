@@ -38,6 +38,7 @@ RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 LAST_ELEMENT = -1
+STATUS_HOMEWORK_GLOB = ''
 
 
 HOMEWORK_STATUSES = {
@@ -159,7 +160,6 @@ def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-    status_homework_glob = ''
 
     while True:
         try:
@@ -171,6 +171,7 @@ def main():
             if not response:
                 time.sleep(RETRY_TIME)
                 continue
+            # if STATUS_HOMEWORK_GLOB !=
             if status_homework_glob != response:
                 status_homework_glob = response
                 message_status = parse_status(response[LAST_ELEMENT])
