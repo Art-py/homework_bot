@@ -71,36 +71,52 @@ def get_api_answer(current_timestamp: int) -> dict:
 
 
 def check_response(response: dict) -> dict:
-    if response:
-        if 'homeworks' not in response:
-            logger.error('Отсутствует ключ homeworks, в ответе API')
-            raise CheckingKeys('Отсутствует ключ homeworks, в ответе API')
-        elif 'current_date' not in response:
-            logger.error('Отсутствует ключ current_date, в ответе API')
-            raise CheckingKeys('Отсутствует ключ current_date, в ответе API')
-        else:
-            return {'result': True, 'answer': response.get('homeworks')}
+    """Проверяет ответ API на корректность."""
+    if not isinstance(response, dict):
+        logger.error('Пришел неверный тип данных от сервера!')
+        raise WrongDataType('Пришел неверный тип данных от сервера!')
+
+    if 'homeworks' not in response:
+        logger.error('Отсутствует ключ homeworks, в ответе API')
+        raise CheckingKeys('Отсутствует ключ homeworks, в ответе API')
+    elif 'current_date' not in response:
+        logger.error('Отсутствует ключ current_date, в ответе API')
+        raise CheckingKeys('Отсутствует ключ current_date, в ответе API')
     else:
-        logger.info('Ответ пришел пустым!')
-        raise EmptyDict('Ответ пришел пустым!')
-    # Если словарь пришел пустым значит проверять нечего, завершаем работу.
-    return {'result': False, 'answer': {}}
+        answer = response.get('homeworks')
+        if not isinstance(answer, list):
+            logger.error('Пришел неверный тип данных от сервера!')
+            raise WrongDataType('Пришел неверный тип данных от сервера!')
+        return answer
 
 
 def parse_status(homework: dict) -> str:
     """
-    извлекает из информации о конкретной домашней работе статус этой работы.
+    Извлекает из информации о конкретной домашней работе статус этой работы.
     """
-    if isinstance(homework, str):
-        logger.error('В функцию parse_status, пришла строка вместо словаря!')
-        raise WrongDataType(
-            'В функцию parse_status, пришла строка вместо словаря!'
-        )
+    if not isinstance(homework, dict):
+        logger.error('Пришел неверный тип данных от сервера!')
+        raise WrongDataType('Пришел неверный тип данных от сервера!')
+
+    if 'status' not in homework:
+        logger.error('Отсутствует ключ status, в ответе API')
+        raise CheckingKeys('Отсутствует ключ status, в ответе API')
+    else:
+        homework_status = homework.get('status')
+        if homework_status not in HOMEWORK_STATUSES:
+            logger.error(f'Недокументированный статус {homework_status}')
+            raise CheckingKeys(
+                f'Недокументированный статус {homework_status}'
+            )
+    if 'homework_name' not in homework:
+        logger.error('Отсутствует ключ homework_name, в ответе API')
+        raise CheckingKeys('Отсутствует ключ homework_name, в ответе API')
     else:
         homework_name = homework.get('homework_name')
-        homework_status = homework.get('status')
-        verdict = HOMEWORK_STATUSES.get(homework_status)
-        return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+
+    verdict = HOMEWORK_STATUSES.get(homework_status)
+    return (f'Изменился статус проверки работы '
+            f'"{homework_name}". {verdict}')
 
 def check_tokens() -> bool:
     """Проверяет переменные окружения, при отсутствии, работа прекращается."""
@@ -134,18 +150,13 @@ def main():
                 return
             response = get_api_answer(current_timestamp)
             response = check_response(response)
-            if not response.get('result'):
+            if not response:
                 return
-            if status_homework_glob != response.get('answer'):
-                status_homework_glob = response.get('answer')
-                message_status = parse_status(
-                    response.get('answer')[LAST_ELEMENT]
-                )
+            if status_homework_glob != response:
+                status_homework_glob = response
+                message_status = parse_status(response[LAST_ELEMENT])
                 send_message(bot, message_status)
-            # current_timestamp = ...
             time.sleep(RETRY_TIME)
-            logger.info('Цикл прошел отлично!')
-
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             time.sleep(RETRY_TIME)
