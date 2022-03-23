@@ -63,10 +63,11 @@ def get_api_answer(current_timestamp: int) -> dict:
     except Exception as error:
         logger.error(f'Сбой в работе программы: '
                      f'Эндпоинт {ENDPOINT} недоступен. '
-                     f'Код ответа: {homework_statuses.status_code}')
+                     f'Код ответа: {homework_statuses.status_code}.'
+                     f'Ошибка: {error}')
     if homework_statuses.status_code != HTTPStatus.OK:
-        logger.error(f'Некоректный ответ от сервера. {error}')
-        raise BadReturnAnswer(f'Некоректный ответ от сервера. {error}')
+        logger.error(f'Некоректный ответ от сервера.')
+        raise BadReturnAnswer(f'Некоректный ответ от сервера.')
     return homework_statuses.json()
 
 
@@ -91,8 +92,7 @@ def check_response(response: dict) -> dict:
 
 
 def parse_status(homework: dict) -> str:
-    """Извлекает из информации о конкретной домашней работе,
-     статус этой работы."""
+    """Извлекает из информации о домашней работе, статус этой работы."""
     if not isinstance(homework, dict):
         logger.error('Пришел неверный тип данных от сервера!')
         raise WrongDataType('Пришел неверный тип данных от сервера!')
