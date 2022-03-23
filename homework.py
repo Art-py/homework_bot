@@ -7,7 +7,7 @@ from http import HTTPStatus
 import telegram
 import requests
 from dotenv import load_dotenv
-from exceptions import BadReturnAnswer, EmptyDict, WrongDataType, CheckingKeys
+from exceptions import BadReturnAnswer, WrongDataType, CheckingKeys
 
 load_dotenv()
 
@@ -62,8 +62,8 @@ def get_api_answer(current_timestamp: int) -> dict:
         )
     except Exception as error:
         logger.error(f'Сбой в работе программы: '
-                      f'Эндпоинт {ENDPOINT} недоступен. '
-                      f'Код ответа: {homework_statuses.status_code}')
+                     f'Эндпоинт {ENDPOINT} недоступен. '
+                     f'Код ответа: {homework_statuses.status_code}')
     if homework_statuses.status_code != HTTPStatus.OK:
         logger.error('Некоректный ответ от сервера.')
         raise BadReturnAnswer('Некоректный ответ от сервера.')
@@ -118,22 +118,23 @@ def parse_status(homework: dict) -> str:
     return (f'Изменился статус проверки работы '
             f'"{homework_name}". {verdict}')
 
+
 def check_tokens() -> bool:
     """Проверяет переменные окружения, при отсутствии, работа прекращается."""
     if PRACTICUM_TOKEN is None:
         logger.critical(f'Отсутствует обязательная переменная окружения:'
-                         f'PRACTICUM_TOKEN'
-                         f'Программа принудительно остановлена.')
+                        f'PRACTICUM_TOKEN'
+                        f'Программа принудительно остановлена.')
         return False
     if TELEGRAM_TOKEN is None:
         logger.critical(f'Отсутствует обязательная переменная окружения:'
-                         f'TELEGRAM_TOKEN'
-                         f'Программа принудительно остановлена.')
+                        f'TELEGRAM_TOKEN'
+                        f'Программа принудительно остановлена.')
         return False
     if TELEGRAM_CHAT_ID is None:
         logger.critical(f'Отсутствует обязательная переменная окружения:'
-                         f'TELEGRAM_CHAT_ID'
-                         f'Программа принудительно остановлена.')
+                        f'TELEGRAM_CHAT_ID'
+                        f'Программа принудительно остановлена.')
         return False
     return True
 
