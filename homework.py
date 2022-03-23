@@ -3,11 +3,18 @@ import sys
 import time
 import logging
 from http import HTTPStatus
+import json
 
 import telegram
 import requests
 from dotenv import load_dotenv
+
 from exceptions import BadReturnAnswer
+
+try:
+    from json.decoder import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
 
 load_dotenv()
 
@@ -46,7 +53,7 @@ def send_message(bot: telegram.bot, message: str):
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
         logger.info(f'Бот отправил сообщение {message}')
-    except Exception as error:
+    except telegram.error.TelegramError as error:
         logger.error(f'Не удалось отправить сообщение в телеграмм: {error}')
 
 
@@ -60,15 +67,26 @@ def get_api_answer(current_timestamp: int) -> dict:
             headers=HEADERS,
             params=params
         )
-    except Exception as error:
+    except requests.exceptions.HTTPError as error:
         logger.error(f'Сбой в работе программы: '
                      f'Эндпоинт {ENDPOINT} недоступен. '
                      f'Код ответа: {homework_statuses.status_code}.'
                      f'Ошибка: {error}')
+    except requests.exceptions.Timeout as error:
+        logger.error(f'Сбой в работе программы! Ошибка url: {error}')
+    except requests.exceptions.ConnectionError as error:
+        logger.error(f'Ошибка соединения: {error}')
+    except requests.exceptions.RequestException as error:
+        logger.error(f'Что то пошло не так: {error}')
+
     if homework_statuses.status_code != HTTPStatus.OK:
         logger.error('Некоректный ответ от сервера.')
         raise BadReturnAnswer('Некоректный ответ от сервера.')
-    return homework_statuses.json()
+    try:
+        ret_answer = homework_statuses.json()
+        return ret_answer
+    except JSONDecodeError:
+        logger.error('Не удалось получить ответ от сервера!')
 
 
 def check_response(response: dict) -> dict:
@@ -163,8 +181,6 @@ def main():
             message = f'Сбой в работе программы: {error}'
             send_message(bot, message)
             time.sleep(RETRY_TIME)
-        else:
-            pass
 
 
 if __name__ == '__main__':
