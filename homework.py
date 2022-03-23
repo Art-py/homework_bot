@@ -38,7 +38,6 @@ RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 LAST_ELEMENT = -1
-STATUS_HOMEWORK_GLOB = ''
 
 
 HOMEWORK_STATUSES = {
@@ -109,12 +108,7 @@ def check_response(response: dict) -> dict:
         return answer
 
 
-def parse_status(homework: dict) -> str:
-    """Извлекает из информации о домашней работе, статус этой работы."""
-    if not isinstance(homework, dict):
-        logger.error('Пришел неверный тип данных от сервера!')
-        raise TypeError('Пришел неверный тип данных от сервера!')
-
+def return_check_status(homework):
     if 'status' not in homework:
         logger.error('Отсутствует ключ status, в ответе API')
         raise KeyError('Отсутствует ключ status, в ответе API')
@@ -125,6 +119,17 @@ def parse_status(homework: dict) -> str:
             raise KeyError(
                 f'Недокументированный статус {homework_status}'
             )
+        return homework_status
+
+
+def parse_status(homework: dict) -> str:
+    """Извлекает из информации о домашней работе, статус этой работы."""
+    if not isinstance(homework, dict):
+        logger.error('Пришел неверный тип данных от сервера!')
+        raise TypeError('Пришел неверный тип данных от сервера!')
+
+    homework_status = return_check_status(homework)
+
     if 'homework_name' not in homework:
         logger.error('Отсутствует ключ homework_name, в ответе API')
         raise KeyError('Отсутствует ключ homework_name, в ответе API')
@@ -160,6 +165,7 @@ def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    response_status_glob = ''
 
     while True:
         try:
@@ -171,9 +177,9 @@ def main():
             if not response:
                 time.sleep(RETRY_TIME)
                 continue
-            # if STATUS_HOMEWORK_GLOB !=
-            if status_homework_glob != response:
-                status_homework_glob = response
+            homework_status = return_check_status(response[LAST_ELEMENT])
+            if response_status_glob != homework_status:
+                response_status_glob = homework_status
                 message_status = parse_status(response[LAST_ELEMENT])
                 send_message(bot, message_status)
             time.sleep(RETRY_TIME)
