@@ -7,7 +7,6 @@ from http import HTTPStatus
 import telegram
 import requests
 from dotenv import load_dotenv
-from typing import Union
 
 from exceptions import BadReturnAnswer
 
@@ -57,11 +56,10 @@ def send_message(bot: telegram.bot, message: str):
         logger.error(f'Не удалось отправить сообщение в телеграмм: {error}')
 
 
-def get_api_answer(current_timestamp: int) -> Union[dict, str]:
+def get_api_answer(current_timestamp: int) -> dict:
     """Получает ответ от сервера и возвращает результат."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    answer_str = 'Сбой в работе эндпойнта'
     try:
         homework_statuses = requests.get(
             ENDPOINT,
@@ -73,16 +71,19 @@ def get_api_answer(current_timestamp: int) -> Union[dict, str]:
                      f'Эндпоинт {ENDPOINT} недоступен. '
                      f'Код ответа: {homework_statuses.status_code}.'
                      f'Ошибка: {error}')
-        return answer_str
+        raise Exception(f'Сбой в работе программы: '
+                        f'Эндпоинт {ENDPOINT} недоступен. '
+                        f'Код ответа: {homework_statuses.status_code}.'
+                        f'Ошибка: {error}')
     except requests.exceptions.Timeout as error:
         logger.error(f'Сбой в работе программы! Ошибка url: {error}')
-        return answer_str
+        raise Exception(f'Сбой в работе программы! Ошибка url: {error}')
     except requests.exceptions.ConnectionError as error:
         logger.error(f'Ошибка соединения: {error}')
-        return answer_str
+        raise Exception(f'Ошибка соединения: {error}')
     except requests.exceptions.RequestException as error:
         logger.error(f'Что то пошло не так: {error}')
-        return answer_str
+        raise Exception(f'Что то пошло не так: {error}')
 
     if homework_statuses.status_code != HTTPStatus.OK:
         logger.error('Некоректный ответ от сервера.')
@@ -180,9 +181,6 @@ def main():
                 time.sleep(RETRY_TIME)
                 continue
             response = get_api_answer(current_timestamp)
-            if isinstance(response, str):
-                time.sleep(RETRY_TIME)
-                continue
             response = check_response(response)
             if not response:
                 time.sleep(RETRY_TIME)
