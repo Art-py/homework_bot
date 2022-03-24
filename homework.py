@@ -171,7 +171,7 @@ def check_tokens() -> bool:
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
+    current_timestamp = int(time.time()) - 60 * 60 * 24
     response_status_glob = ''
 
     while True:
