@@ -185,7 +185,6 @@ def main():
                 continue
             response = check_response(response)
             if not response:
-                logger.info('Пришел пустой ответ от сервера!')
                 time.sleep(RETRY_TIME)
                 continue
             homework_status = return_check_status(response[LAST_ELEMENT])
